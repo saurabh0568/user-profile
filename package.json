@@ -1,0 +1,17 @@
+{
+  "name": "fitai-x",
+  "version": "1.0.0",
+  "description": "FitAI X - Onboarding Application",
+  "private": true,
+  "scripts": {
+    "kill:port": "for /f \"tokens=5\" %a in ('netstat -ano ^| findstr :5000') do taskkill /PID %a /F",
+    "dev": "npx concurrently --names \"BACKEND,FRONTEND\" --prefix-colors \"cyan,magenta\" \"npm run dev --prefix backend\" \"cd frontend && npm run dev\"",
+    "dev:backend": "npm run dev --prefix backend",
+    "dev:frontend": "cd frontend && npm run dev",
+    "install:all": "npm install && npm install --prefix backend && npm install --prefix frontend",
+    "start": "npm run start --prefix backend"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}
