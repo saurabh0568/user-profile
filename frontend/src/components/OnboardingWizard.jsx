@@ -4,7 +4,7 @@ import { questionsData } from '../data/questionsData';
 import QuestionCard from './QuestionCard';
 import SummaryCard from './SummaryCard';
 
-export default function OnboardingWizard() {
+export default function OnboardingWizard({ onComplete }) {
   const [answers, setAnswers] = useState({
     email: '',
     first_name: '',
@@ -224,6 +224,7 @@ export default function OnboardingWizard() {
       const data = await response.json();
       if (response.ok) {
         setIsCompleted(true);
+        if (onComplete) onComplete(answers);
       } else {
         setError(data.error || 'Failed to submit onboarding form.');
       }
@@ -291,7 +292,7 @@ export default function OnboardingWizard() {
       <div className="wizard-header">
         <div className="brand-bar">
           <div className="brand-title">
-            <Flame size={24} color="#00f2fe" fill="#00f2fe" /> FitAI X
+            <Flame size={24} color="#F5C400" fill="#F5C400" /> FitAI X
           </div>
           <span className="brand-badge">Onboarding</span>
         </div>

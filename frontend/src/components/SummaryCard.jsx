@@ -168,8 +168,8 @@ export default function SummaryCard({ answers, onReset }) {
         </div>
 
         {showJson && (
-          <div style={{ background: '#05070c', padding: '16px', borderRadius: '12px', overflowX: 'auto', border: '1px solid var(--border-color)' }}>
-            <pre style={{ fontSize: '0.8rem', color: '#00f2fe', fontFamily: 'monospace' }}>
+          <div style={{ background: '#101010', padding: '16px', borderRadius: '12px', overflowX: 'auto', border: '1px solid rgba(255,214,10,.09)' }}>
+            <pre style={{ fontSize: '0.8rem', color: '#FDE68A', fontFamily: "'JetBrains Mono', monospace" }}>
               {JSON.stringify(answers, null, 2)}
             </pre>
           </div>
