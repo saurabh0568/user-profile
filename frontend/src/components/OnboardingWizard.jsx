@@ -4,9 +4,9 @@ import { questionsData } from '../data/questionsData';
 import QuestionCard from './QuestionCard';
 import SummaryCard from './SummaryCard';
 
-export default function OnboardingWizard({ onComplete }) {
+export default function OnboardingWizard({ email = '', onComplete, onBackToEmail }) {
   const [answers, setAnswers] = useState({
-    email: '',
+    email: email,
     first_name: '',
     last_name: '',
     date_of_birth: '',
@@ -37,6 +37,12 @@ export default function OnboardingWizard({ onComplete }) {
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isCompleted, setIsCompleted] = useState(false);
+
+  useEffect(() => {
+    if (email) {
+      setAnswers((prev) => ({ ...prev, email }));
+    }
+  }, [email]);
 
   // Determine active questions based on dynamic conditional functions
   const activeQuestions = questionsData.filter((q) => {
@@ -80,32 +86,6 @@ export default function OnboardingWizard({ onComplete }) {
           setError('This field is required before continuing.');
           return false;
         }
-      }
-    }
-
-    // Specific input type validations
-    if (currentQuestion.field === 'email' && val) {
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(val.trim())) {
-        setError('Please enter a valid email address (e.g. name@email.com)');
-        return false;
-      }
-
-      // Check unique email in DB (Server check)
-      setIsSubmitting(true);
-      setError('');
-      try {
-        const response = await fetch(`/api/onboarding/check/${encodeURIComponent(val.trim())}`);
-        const data = await response.json();
-        if (response.ok && data.exists) {
-          setError('User already exists. Please use a unique email address.');
-          setIsSubmitting(false);
-          return false;
-        }
-      } catch (err) {
-        console.warn('Unable to verify email uniqueness on server:', err);
-      } finally {
-        setIsSubmitting(false);
       }
     }
 
@@ -169,6 +149,8 @@ export default function OnboardingWizard({ onComplete }) {
     setError('');
     if (currentIndex > 0) {
       setCurrentIndex((prev) => prev - 1);
+    } else if (onBackToEmail) {
+      onBackToEmail();
     }
   };
 
@@ -335,7 +317,7 @@ export default function OnboardingWizard({ onComplete }) {
             type="button"
             className="btn-secondary"
             onClick={handleBack}
-            disabled={currentIndex === 0 || isSubmitting}
+            disabled={(currentIndex === 0 && !onBackToEmail) || isSubmitting}
           >
             <ChevronLeft size={18} /> Back
           </button>

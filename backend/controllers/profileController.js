@@ -1,4 +1,56 @@
 import { pool } from '../db.js';
+import crypto from 'crypto';
+
+// GET /api/config/cloudinary
+export const getCloudinaryConfig = async (req, res) => {
+  res.json({
+    cloudName: process.env.CLOUDINARY_CLOUD_NAME || '',
+    apiKey: process.env.CLOUDINARY_API_KEY || ''
+  });
+};
+
+// POST /api/upload/cloudinary
+export const uploadCloudinaryImage = async (req, res) => {
+  const { fileData } = req.body;
+  const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
+  const apiKey = process.env.CLOUDINARY_API_KEY;
+  const apiSecret = process.env.CLOUDINARY_API_SECRET;
+
+  if (!fileData) {
+    return res.status(400).json({ error: 'fileData parameter is required.' });
+  }
+
+  if (!cloudName || !apiKey || !apiSecret) {
+    return res.status(500).json({ error: 'Cloudinary environment variables missing in .env' });
+  }
+
+  try {
+    const timestamp = Math.floor(Date.now() / 1000);
+    const strToSign = `timestamp=${timestamp}${apiSecret}`;
+    const signature = crypto.createHash('sha1').update(strToSign).digest('hex');
+
+    const params = new URLSearchParams();
+    params.append('file', fileData);
+    params.append('api_key', apiKey);
+    params.append('timestamp', timestamp.toString());
+    params.append('signature', signature);
+
+    const response = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
+      method: 'POST',
+      body: params,
+    });
+
+    const data = await response.json();
+    if (!response.ok) {
+      throw new Error(data.error?.message || 'Cloudinary upload failed');
+    }
+
+    res.json({ secure_url: data.secure_url, public_id: data.public_id });
+  } catch (error) {
+    console.error('Cloudinary upload error:', error);
+    res.status(500).json({ error: 'Cloudinary upload error', details: error.message });
+  }
+};
 
 // GET /api/profile/:email/summary
 export const getProfileSummary = async (req, res) => {
@@ -59,6 +111,30 @@ export const updatePersonalInfo = async (req, res) => {
     res.json({ message: 'Personal info updated successfully', data: result.rows[0] });
   } catch (error) {
     res.status(500).json({ error: 'Failed to update personal info', details: error.message });
+  }
+};
+
+// PUT /api/profile/:email/avatar
+export const updateAvatar = async (req, res) => {
+  const { email } = req.params;
+  const cleanEmail = email.trim().toLowerCase();
+  const { avatar_url } = req.body;
+
+  try {
+    const result = await pool.query(
+      `INSERT INTO onboarding_responses (email, avatar_url, updated_at)
+       VALUES ($1, $2, NOW())
+       ON CONFLICT (email) DO UPDATE SET 
+         avatar_url = EXCLUDED.avatar_url,
+         updated_at = NOW()
+       RETURNING *`,
+      [cleanEmail, avatar_url]
+    );
+
+    res.json({ message: 'Avatar updated successfully', data: result.rows[0] });
+  } catch (error) {
+    console.error('Avatar DB update error:', error);
+    res.status(500).json({ error: 'Failed to update avatar in database', details: error.message });
   }
 };
 

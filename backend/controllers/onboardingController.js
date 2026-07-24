@@ -42,6 +42,7 @@ export const checkEmailExists = async (req, res) => {
 export const saveOnboarding = async (req, res) => {
   const {
     email,
+    avatar_url,
     first_name,
     last_name,
     date_of_birth,
@@ -81,7 +82,7 @@ export const saveOnboarding = async (req, res) => {
   try {
     const queryText = `
       INSERT INTO onboarding_responses (
-        email, first_name, last_name, date_of_birth, gender,
+        email, avatar_url, first_name, last_name, date_of_birth, gender,
         weight, weight_unit, height, height_unit,
         main_goal, event_name, event_date,
         days_per_week, best_days,
@@ -90,16 +91,17 @@ export const saveOnboarding = async (req, res) => {
         medical_condition_details, sleep_hours, dietary_preference,
         has_food_allergies, food_allergies_details, is_completed, current_step, updated_at
       ) VALUES (
-        $1, $2, $3, $4, $5,
-        $6, $7, $8, $9,
-        $10, $11, $12,
-        $13, $14,
-        $15, $16, $17,
-        $18, $19, $20,
-        $21, $22, $23,
-        $24, $25, $26, $27, NOW()
+        $1, $2, $3, $4, $5, $6,
+        $7, $8, $9, $10,
+        $11, $12, $13,
+        $14, $15,
+        $16, $17, $18,
+        $19, $20, $21,
+        $22, $23, $24,
+        $25, $26, $27, $28, NOW()
       )
       ON CONFLICT (email) DO UPDATE SET
+        avatar_url = COALESCE(EXCLUDED.avatar_url, onboarding_responses.avatar_url),
         first_name = EXCLUDED.first_name,
         last_name = EXCLUDED.last_name,
         date_of_birth = EXCLUDED.date_of_birth,
@@ -131,7 +133,7 @@ export const saveOnboarding = async (req, res) => {
     `;
 
     const values = [
-      cleanEmail, first_name, last_name, date_of_birth, gender,
+      cleanEmail, avatar_url || null, first_name, last_name, date_of_birth, gender,
       weight, weight_unit, height, height_unit,
       main_goal, event_name, event_date,
       days_per_week, JSON.stringify(best_days),

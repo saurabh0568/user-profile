@@ -23,15 +23,12 @@ export const pool = new pg.Pool({
 export const initDb = async () => {
   const client = await pool.connect();
   try {
-    console.log('⚡ Connected to Neon PostgreSQL. Initializing schema...');
-
-    // Drop table if old columns exist to recreate the clean combined layout
-    await client.query(`DROP TABLE IF EXISTS user_settings CASCADE;`);
-    await client.query(`DROP TABLE IF EXISTS onboarding_responses CASCADE;`);
+    console.log('⚡ Connected to Neon PostgreSQL. Verifying schema...');
 
     await client.query(`
-      CREATE TABLE onboarding_responses (
+      CREATE TABLE IF NOT EXISTS onboarding_responses (
         email                     VARCHAR(255) PRIMARY KEY,
+        avatar_url                TEXT,
         first_name                VARCHAR(100),
         last_name                 VARCHAR(100),
         date_of_birth             VARCHAR(50),
@@ -63,8 +60,13 @@ export const initDb = async () => {
       );
     `);
 
+    // Ensure avatar_url column exists if table was created previously
     await client.query(`
-      CREATE TABLE user_settings (
+      ALTER TABLE onboarding_responses ADD COLUMN IF NOT EXISTS avatar_url TEXT;
+    `);
+
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS user_settings (
         email                     VARCHAR(255) PRIMARY KEY REFERENCES onboarding_responses(email) ON DELETE CASCADE,
         ai_preferences            JSONB DEFAULT '{}'::jsonb,
         notifications             JSONB DEFAULT '{}'::jsonb,
@@ -77,7 +79,7 @@ export const initDb = async () => {
       );
     `);
 
-    console.log("✅ Tables 'onboarding_responses' and 'user_settings' recreated successfully with updated schema.");
+    console.log("✅ Tables 'onboarding_responses' and 'user_settings' checked/ready.");
   } catch (err) {
     console.error('❌ DB init error:', err.message);
   } finally {

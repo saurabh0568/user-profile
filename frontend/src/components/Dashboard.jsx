@@ -1,8 +1,9 @@
 import React from 'react';
 import { Flame, CheckCircle2, ArrowRight } from 'lucide-react';
 
-export default function Dashboard({ answers, onGoToProfile }) {
+export default function Dashboard({ answers, onGoToProfile, onSwitchEmail }) {
   const firstName = answers?.first_name || '';
+  const email = answers?.email || '';
 
   return (
     <div className="dashboard-page">
@@ -31,17 +32,30 @@ export default function Dashboard({ answers, onGoToProfile }) {
 
           {/* Subtitle */}
           <p className="dashboard-subtitle">
-            Your onboarding has been completed successfully.
+            {email ? `Signed in as ${email}. ` : ''}Your onboarding has been completed successfully.
           </p>
 
-          {/* CTA Button */}
-          <button
-            type="button"
-            className="dashboard-btn"
-            onClick={onGoToProfile}
-          >
-            Go to Profile <ArrowRight size={18} />
-          </button>
+          {/* CTA Buttons */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', width: '100%', marginTop: '16px' }}>
+            <button
+              type="button"
+              className="dashboard-btn"
+              onClick={onGoToProfile}
+            >
+              Go to Profile <ArrowRight size={18} />
+            </button>
+
+            {onSwitchEmail && (
+              <button
+                type="button"
+                className="btn-secondary"
+                onClick={onSwitchEmail}
+                style={{ padding: '12px', fontSize: '14px', borderRadius: '12px' }}
+              >
+                Switch Account / Enter Different Email
+              </button>
+            )}
+          </div>
         </div>
       </div>
     </div>

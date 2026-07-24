@@ -3,17 +3,6 @@ export const questionsData = [
   {
     id: "1.1",
     section: "1. Basic Profile",
-    field: "email",
-    title: "What is your email address?",
-    subtitle: "Your email will serve as your primary account identifier and keep your profile synced.",
-    type: "text",
-    placeholder: "e.g. yourname@email.com",
-    inputType: "email",
-    required: true,
-  },
-  {
-    id: "1.2",
-    section: "1. Basic Profile",
     field: "first_name",
     title: "What is your first name?",
     subtitle: "Let's personalize your FitAI X coaching plan.",
@@ -23,7 +12,7 @@ export const questionsData = [
     required: true,
   },
   {
-    id: "1.3",
+    id: "1.2",
     section: "1. Basic Profile",
     field: "last_name",
     title: "What is your last name?",
